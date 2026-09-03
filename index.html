@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#217346">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>कामे ट्रॅकर — सेवा · पैसे · बक्षीस · शिक्षा</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px;
+    font-family: "Segoe UI", "Noto Sans", "Nirmala UI", sans-serif;
+    background: #e9eef5; color: #222;
+  }
+  .app { max-width: 1280px; margin: 0 auto; }
+  header {
+    background: linear-gradient(90deg, #217346, #185c37);
+    color: #fff; border-radius: 12px 12px 0 0;
+    padding: 14px 20px; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  header h1 { margin: 0 0 2px; font-size: 22px; }
+  header p { margin: 0; opacity: .92; font-size: 13px; }
+  .toolbar {
+    background: #fff; padding: 8px 14px; display: flex; gap: 8px; flex-wrap: wrap;
+    border-bottom: 1px solid #d5dbe3; align-items: center;
+  }
+  .btn {
+    border: none; border-radius: 6px; padding: 7px 12px; cursor: pointer;
+    font-size: 13.5px; font-weight: 600; color: #fff; background: #217346;
+    font-family: inherit;
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn.blue { background: #1f6fb2; }
+  .btn.gray { background: #5a6a7a; }
+  .btn.red { background: #b5362c; }
+  .btn.wa { background: #25D366; }
+  .btn.vintage { background: #8b7355; }
+  .btn.pdf { background: #d32f2f; }
+  .btn.small { padding: 4px 8px; font-size: 12px; }
+  #storageWarn {
+    display: none; background: #fff3cd; color: #856404; padding: 8px 14px; font-size: 13px;
+    border-bottom: 1px solid #e6d48a;
+  }
+  .cards {
+    display: flex; flex-wrap: nowrap; gap: 8px; padding: 10px 14px;
+    overflow-x: auto; background: #e9eef5;
+  }
+  .card {
+    flex: 1 1 0; min-width: 110px; background: #fff; border-radius: 8px;
+    padding: 6px 10px; border-left: 5px solid #999;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .card span { font-size: 12px; color: #555; white-space: nowrap; }
+  .card b { font-size: 16px; }
+  .card.total { border-color: #217346; }
+  .card.done  { border-color: #00a651; } .card.done b { color: #006100; }
+  .card.pend  { border-color: #2e9bd6; } .card.pend b { color: #1f4e79; }
+  .card.over  { border-color: #e13a2f; } .card.over b { color: #9c0006; }
+  .card.money { border-color: #8e6c00; } .card.money b { color: #6d5200; }
+  .card.receivable { border-color: #c25e00; } .card.receivable b { color: #8a4300; }
+
+  section.panel {
+    background: #fff; margin: 0 14px 14px; border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08); padding: 14px 16px;
+  }
+  section.panel h2 { margin: 0 0 10px; font-size: 17px; color: #185c37; }
+  .formgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .formgrid label { font-size: 13px; font-weight: 600; color: #333; display: block; margin-bottom: 4px; }
+  .formgrid input, .formgrid textarea, .formgrid select {
+    width: 100%; padding: 8px; border: 1px solid #b9c2cc; border-radius: 6px; font-size: 14px;
+    font-family: inherit; background: #fff;
+  }
+  .formgrid textarea { resize: vertical; min-height: 38px; }
+  .form-actions { margin-top: 12px; display: flex; gap: 10px; }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chip-btn {
+    border: 1px solid #b9c2cc; background: #f5f7fa; border-radius: 20px;
+    padding: 5px 12px; cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  .chip-btn.active { background: #217346; color: #fff; border-color: #217346; }
+
+  .table-wrap { overflow: auto; max-height: 560px; border: 1px solid #cfd6de; border-radius: 6px; }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 980px; font-size: 13.5px; }
+  table.grid th {
+    background: #217346; color: #fff; padding: 8px; text-align: left;
+    position: sticky; top: 0; z-index: 2; border: 1px solid #1a5c38; white-space: nowrap;
+  }
+  table.grid td { border: 1px solid #d0d7de; padding: 7px 8px; vertical-align: top; }
+  tr.row-done td   { background: #c6efce; color: #006100; }
+  tr.row-over td   { background: #ffc7ce; color: #9c0006; }
+  tr.row-pend td   { background: #ddebf7; color: #1f4e79; }
+  tr.sel td { outline: none; box-shadow: none; }
+  tr.sel { box-shadow: inset 4px 0 0 #185c37; }
+  table.grid select, table.grid select:focus {
+    background: #fff; color: #111; outline: 2px solid #217346;
+  }
+  .lang-toggle {
+    display: inline-flex; border: 1px solid #c5d0c8; border-radius: 6px; overflow: hidden; margin-left: 6px;
+  }
+  .lang-toggle button {
+    border: 0; background: #fff; color: #185c37; padding: 6px 10px; cursor: pointer;
+    font-weight: 700; font-size: 12px; font-family: inherit;
+  }
+  .lang-toggle button.on { background: #217346; color: #fff; }
+  table.grid select {
+    width: 100%; max-width: 210px; padding: 4px; border-radius: 5px;
+    border: 1px solid #9aa7b3; background: #fff; color: #222; font-family: inherit;
+  }
+  .cell-items { white-space: pre-wrap; min-width: 140px; }
+  .cell-name { font-weight: 700; min-width: 160px; }
+  .money-badge { font-weight: 700; }
+  .actions { white-space: nowrap; }
+  .actions .btn { margin: 1px 2px; }
+  .empty-row td { text-align: center; padding: 26px; color: #666; background: #f7f9fb; }
+
+  .two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; margin: 0 14px 14px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+  .two-col .panel { margin: 0; }
+  table.mini { border-collapse: collapse; width: 100%; font-size: 13px; }
+  table.mini th { background: #185c37; color: #fff; padding: 7px; border: 1px solid #1a5c38; }
+  table.mini td { border: 1px solid #d0d7de; padding: 6px 7px; text-align: center; }
+  tr.thisweek td { background: #fff8d6; font-weight: 700; }
+  ul.logs { list-style: none; margin: 0; padding: 0; max-height: 340px; overflow: auto; }
+  ul.logs li {
+    display: flex; align-items: flex-start; gap: 8px; padding: 7px 6px;
+    border-bottom: 1px dashed #d8dee6; font-size: 13px;
+  }
+  .log-date { color: #667; white-space: nowrap; font-size: 12px; min-width: 78px; }
+  .log-chip { border-radius: 12px; padding: 1px 8px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  .log-chip.reward { background: #c6efce; color: #006100; }
+  .log-chip.punish { background: #ffc7ce; color: #9c0006; }
+  .log-chip.done   { background: #d4edda; color: #11613c; }
+  .log-chip.paid   { background: #ffe9b3; color: #7a5b00; }
+  .log-chip.report { background: #e2d4f0; color: #4a2670; }
+  .log-del { margin-left: auto; border: none; background: none; color: #b00; cursor: pointer; }
+
+  details.help { margin: 0 14px 20px; background: #fff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  details.help summary { cursor: pointer; font-weight: 700; color: #185c37; }
+  details.help ol { font-size: 13.5px; line-height: 1.75; }
+  .help-grid { display: grid; grid-template-columns: 56px 1fr; gap: 6px 12px; font-size: 13.5px; margin-top: 10px; }
+  .help-grid kbd {
+    font: 700 11px ui-monospace, Consolas, monospace; background: #185c37; color: #fff;
+    border-radius: 4px; padding: 2px 6px;
+  }
+  footer { text-align: center; color: #7a8695; font-size: 12px; padding: 6px 0 18px; }
+  .mobile-link { color: #1f6fb2; text-decoration: none; font-weight: 500; }
+  .status-badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .status-complete { background: #c6efce; color: #006100; }
+  .status-incomplete { background: #ffc7ce; color: #9c0006; }
+  .status-pending { background: #ddebf7; color: #1f4e79; }
+  .status-progress { background: #fff3cd; color: #856404; }
+  .hint { font-size: 12.5px; color: #5a6a7a; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    display: none; justify-content: center; align-items: flex-start;
+    z-index: 1000; padding: 24px 16px; overflow-y: auto;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; max-width: 820px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal-header {
+    background: linear-gradient(90deg, #217346, #185c37);
+    color: #fff; padding: 14px 18px; border-radius: 12px 12px 0 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-header h3 { margin: 0; font-size: 18px; }
+  .modal-close { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+  .modal-body { padding: 18px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+  .form-row label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid #b9c2cc; border-radius: 6px; font-size: 14px; font-family: inherit;
+  }
+  .form-row textarea { min-height: 90px; resize: vertical; }
+  .wide { grid-column: 1 / -1; }
+  .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 8px; padding-top: 12px; border-top: 1px solid #e1e4e8; }
+
+  .vintage-report {
+    background: #fdf6e3; border: 3px solid #8b7355; padding: 32px 36px;
+    font-family: Georgia, "Times New Roman", "Nirmala UI", serif; color: #3d2f1f;
+  }
+  .vintage-header { text-align: center; border-bottom: 2px double #8b7355; padding-bottom: 14px; margin-bottom: 16px; }
+  .vintage-header h1 { margin: 0; font-size: 26px; font-weight: normal; letter-spacing: 2px; color: #5d4e37; }
+  .vintage-header .subtitle { font-size: 13px; color: #8b7355; margin-top: 6px; font-style: italic; }
+  .vintage-field { margin: 8px 0; }
+  .vintage-label { font-weight: bold; color: #5d4e37; margin-right: 8px; }
+  .vintage-divider { border-top: 1px dashed #b8a080; margin: 14px 0; }
+  .vintage-body { white-space: pre-wrap; line-height: 1.75; font-size: 15px; }
+  .vintage-footer { text-align: right; margin-top: 22px; padding-top: 14px; border-top: 2px double #8b7355; font-style: italic; }
+
+  @media print {
+    body * { visibility: hidden; }
+    #vintageReportContent, #vintageReportContent * { visibility: visible; }
+    #vintageReportContent { position: absolute; left: 0; top: 0; width: 100%; }
+    .modal-header, .modal-actions, .toolbar, header { display: none !important; }
+  }
+</style>
+<style id="polishCss">
+/* ---- कामे ट्रॅकर touch & polish layer: tap sounds · haptics · toasts ---- */
+html { -webkit-text-size-adjust: 100%; }
+* { -webkit-tap-highlight-color: transparent; }
+button, tr[data-rowid], summary { touch-action: manipulation; }
+.btn, .chip-btn, .lang-toggle button { min-height: 40px; }
+#btnSound { padding: 7px 10px; }
+table.grid td, table.mini td { font-variant-numeric: tabular-nums; }
+
+.kam-toast {
+  position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%);
+  background: #232f3b; color: #fff; border-radius: 24px; padding: 10px 18px;
+  font-size: 13.5px; font-weight: 700; z-index: 1200; box-shadow: 0 6px 20px rgba(0,0,0,.35);
+  opacity: 0; transition: opacity .18s; pointer-events: none; max-width: 86vw; text-align: center;
+}
+.kam-toast.show { opacity: 1; }
+.kam-toast.err { background: #8f1d16; }
+
+@media (max-width: 640px) {
+  body { padding: 10px; }
+  .toolbar { padding: 8px 10px; }
+  .btn { padding: 9px 12px; }
+  header { padding: 12px 14px; }
+  header h1 { font-size: 19px; }
+  .cards { padding: 8px 10px; }
+  section.panel { margin: 0 8px 10px; padding: 12px 12px; }
+  .two-col { margin: 0 8px 10px; }
+  details.help { margin: 0 8px 16px; }
+  .table-wrap { max-height: 65vh; }
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>कामे ट्रॅकर</h1>
+    <p>सेवेला महत्त्व · वेळेत काम = वेळेत पैसे · पूर्ण + बक्षीस · प्रलंबित · उशीर + शिक्षा</p>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn" id="btnNew">नवीन काम जोडा</button>
+    <button class="btn wa" id="btnMobileUpdate">मोबाइल अपडेट</button>
+    <button class="btn blue" id="btnBackup">बॅकअप</button>
+    <label class="btn gray" style="margin:0;"><span id="lblImport">आयात</span><input type="file" id="fileImport" accept=".json,.txt,application/json,text/plain" style="display:none;"></label>
+    <button class="btn gray" id="btnInfo">माहिती</button>
+    <button class="btn red" id="btnClearAll">सर्व हटवा</button>
+    <span class="lang-toggle" title="Language / भाषा">
+      <button type="button" id="langMr" class="on">मराठी</button>
+      <button type="button" id="langEn">EN</button>
+    </span>
+    <button type="button" class="btn gray" id="btnSound" title="आवाज">🔊</button>
+    <span id="autoSaveHint" style="margin-left:auto; font-size:12px; color:#5a6a7a;">प्रत्येक बदल आपोआप सेव्ह</span>
+  </div>
+  <div id="storageWarn">या पूर्वावलोकनात जतन नाही — फाइल ब्राउझरमध्ये उघडा.</div>
+
+  <div class="cards">
+    <div class="card total"><span>एकूण कामे</span><b id="stTotal">0</b></div>
+    <div class="card done"><span>पूर्ण (बक्षीस)</span><b id="stDone">0</b></div>
+    <div class="card pend"><span>प्रलंबित</span><b id="stPend">0</b></div>
+    <div class="card over"><span>उशीरलेली (शिक्षा)</span><b id="stOver">0</b></div>
+    <div class="card money"><span>जमा रक्कम</span><b id="stPaid">₹0</b></div>
+    <div class="card receivable"><span>येणे रक्कम</span><b id="stDue">₹0</b></div>
+  </div>
+
+  <section class="panel" id="formPanel" style="display:none;">
+    <h2 id="formTitle">नवीन काम नोंदवा</h2>
+    <div class="formgrid">
+      <div>
+        <label>कामाचे नाव *</label>
+        <input type="text" id="taskName" placeholder="उदा. क्लायंटची वेबसाइट डिलिव्हर करणे">
+      </div>
+      <div>
+        <label>लागणाऱ्या गोष्टी / साहित्य (प्रत्येक गोष्ट नवीन ओळीत)</label>
+        <textarea id="taskItems" placeholder="उदा. डोमेन"></textarea>
+      </div>
+      <div>
+        <label>मुदत (शेवटची तारीख)</label>
+        <input type="date" id="taskDeadline">
+      </div>
+      <div>
+        <label>रक्कम (₹)</label>
+        <input type="number" id="taskAmount" min="0" step="1" placeholder="0">
+      </div>
+      <div>
+        <label>काम करणारा व्यक्ती (मोबाइल नंबर)</label>
+        <input type="tel" id="taskAssigneeMobile" placeholder="उदा. 919876543210">
+      </div>
+      <div>
+        <label>काम साठी व्यक्ती (मोबाइल नंबर)</label>
+        <input type="tel" id="taskRequesterMobile" placeholder="उदा. 919876543210">
+      </div>
+      <div>
+        <label>स्थिती</label>
+        <select id="taskStatus">
+          <option value="pending">प्रलंबित</option>
+          <option value="progress">प्रगतीत</option>
+          <option value="done">पूर्ण</option>
+          <option value="incomplete">अपूर्ण</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" id="btnSubmit">काम सेव्ह करा</button>
+      <button class="btn gray" id="btnCancelEdit">रद्द करा</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 id="listTitle">कामांची यादी (मनोरे)</h2>
+    <div class="filters">
+      <button class="chip-btn" data-filter="all">सर्व</button>
+      <button class="chip-btn" data-filter="pending">प्रलंबित</button>
+      <button class="chip-btn" data-filter="progress">प्रगतीत</button>
+      <button class="chip-btn" data-filter="overdue">उशीरलेली</button>
+      <button class="chip-btn" data-filter="done">पूर्ण झाली</button>
+      <button class="chip-btn" data-filter="incomplete">अपूर्ण</button>
+      <button class="chip-btn" data-filter="unpaid">पैसे येणे</button>
+    </div>
+    <p class="hint" id="selHint" style="margin:0 0 8px;">मोबाइल अपडेटसाठी यादीतील ओळ क्लिक करून निवडा, मग वर <b>मोबाइल अपडेट</b> दाबा.</p>
+    <div id="recoverPanel" class="recover" style="display:none; border:1px dashed #b9c2cc; border-radius:8px; padding:12px; margin-bottom:10px; background:#f8faf9;">
+      <b id="recoverTitle">index 9 ची यादी कशी आणायची</b>
+      <ol id="recoverSteps" style="margin:8px 0 10px; padding-left:18px; font-size:13.5px; line-height:1.6;"></ol>
+      <textarea id="pasteJson" style="width:100%; min-height:70px; font-family:monospace; font-size:12px; margin-bottom:8px;" placeholder="JSON"></textarea>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn" id="btnRecoverImport">आयात</button>
+        <button type="button" class="btn gray" id="btnPasteGo">पेस्ट सेव्ह</button>
+        <button type="button" class="btn gray" id="btnLoadSamples">नमुना कामे दाखवा</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="grid">
+        <thead>
+          <tr>
+            <th>क्र.</th><th>कामाचे नाव</th><th>लागणाऱ्या गोष्टी</th><th>मुदत</th>
+            <th>रक्कम</th><th>पैसे</th><th>स्थिती</th><th>काम करणारा</th><th>काम साठी</th><th>बक्षीस / शिक्षा</th><th>क्रिया</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="two-col">
+    <section class="panel" id="weeklySection">
+      <h2>आठवड्याचा पाठपुरावा (शेवटचे ८ आठवडे)</h2>
+      <table class="mini">
+        <thead>
+          <tr><th>आठवडा</th><th>नवीन कामे</th><th>पूर्ण कामे</th><th>जमा रक्कम</th><th>बक्षिसे</th><th>शिक्षा</th></tr>
+        </thead>
+        <tbody id="weeklyBody"></tbody>
+      </table>
+    </section>
+    <section class="panel" id="logsSection">
+      <h2>बक्षीस व शिक्षा नोंदी</h2>
+      <ul class="logs" id="logList"></ul>
+    </section>
+  </div>
+
+  <details class="help" id="infoTab">
+    <summary>माहिती — कसे वापरावे व शॉर्टकट</summary>
+    <ol>
+      <li><b>नवीन काम:</b> वरतील बटण किंवा F2. फॉर्म नेहमी बंद राहतो.</li>
+      <li><b>मोबाइल अपडेट:</b> काम निवडा → वरतील हिरवे बटण. WhatsApp / पत्र / PDF तिथेच.</li>
+      <li>निळा = प्रलंबित · लाल = उशीर + शिक्षा · हिरवा = पूर्ण + बक्षीस.</li>
+      <li>पूर्ण कामे खाली, नवीन वर. प्रत्येक बदल आपोआप सेव्ह.</li>
+    </ol>
+    <div class="help-grid">
+      <div><kbd>F1</kbd></div><div>ही माहिती उघडा / बंद</div>
+      <div><kbd>F2</kbd></div><div>नवीन काम — फॉर्म उघडा / बंद</div>
+      <div><kbd>F3</kbd></div><div>काम सेव्ह / अपडेट</div>
+      <div><kbd>F4</kbd></div><div>फॉर्म रद्द व बंद</div>
+      <div><kbd>F5</kbd></div><div>यादी रीफ्रेश</div>
+      <div><kbd>F6</kbd></div><div>बॅकअप डाउनलोड</div>
+      <div><kbd>F7</kbd></div><div>बॅकअप आयात</div>
+      <div><kbd>F8</kbd></div><div>पुढचा फिल्टर</div>
+      <div><kbd>F9</kbd></div><div>आठवड्याचा अहवाल</div>
+      <div><kbd>F10</kbd></div><div>बक्षीस / शिक्षा नोंदी</div>
+      <div><kbd>F11</kbd></div><div>निवडलेल्या कामाचे संपादन</div>
+      <div><kbd>F12</kbd></div><div>मोबाइल अपडेट (निवडलेले काम)</div>
+    </div>
+  </details>
+
+  <footer>कामे ट्रॅकर · "सेवेला महत्त्व — वेळेत काम झाले तरच वेळेत पैसे हातात येतात"</footer>
+</div>
+
+<div class="modal-overlay" id="reportModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">मोबाइल अपडेट / प्रगती अहवाल</h3>
+      <button class="modal-close" type="button" id="btnCloseReport">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint" id="repPeople"></p>
+      <div class="form-row">
+        <div>
+          <label>अहवाल प्रकार</label>
+          <select id="reportType">
+            <option value="progress">प्रगती अहवाल</option>
+            <option value="request">विनंती (करणाऱ्याला)</option>
+            <option value="completion">पूर्णता अहवाल</option>
+            <option value="issue">समस्या / अडचण</option>
+          </select>
+        </div>
+        <div>
+          <label>प्रगती टक्केवारी (%)</label>
+          <input type="number" id="reportProgress" min="0" max="100" value="0">
+        </div>
+        <div class="wide">
+          <label>अहवाल तपशील</label>
+          <textarea id="reportDetails" placeholder="यथार्थ प्रगती, पूर्ण झालेले काम, शिल्लक काम, अडचणी..."></textarea>
+        </div>
+        <div class="wide">
+          <label>शिल्लक काम / आगामी पावले</label>
+          <textarea id="reportNextSteps" placeholder="आता काय करणार, कधी पर्यंत पूर्ण होईल..."></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn gray" id="btnCancelReport">रद्द</button>
+        <button type="button" class="btn vintage" id="btnVintage">विंटेज पत्र</button>
+        <button type="button" class="btn wa" id="btnWaDoer">करणाऱ्याला WhatsApp</button>
+        <button type="button" class="btn wa" id="btnWaClient">क्लायंटला WhatsApp</button>
+        <button type="button" class="btn pdf" id="btnPdf">प्रिंट / PDF</button>
+        <button type="button" class="btn" id="btnSaveReport">अहवाल सेव्ह</button>
+      </div>
+      <h4 style="margin:16px 0 8px; color:#185c37;">अहवाल इतिहास</h4>
+      <div id="reportHistory"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="vintageModal">
+  <div class="modal" style="max-width:780px;">
+    <div class="modal-header">
+      <h3>विंटेज अहवाल पत्र</h3>
+      <button class="modal-close" type="button" id="btnCloseVintage">×</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div id="vintageReportContent"></div>
+    </div>
+    <div class="modal-actions" style="padding:12px 18px;">
+      <button class="btn pdf" id="btnPrintVintage">प्रिंट / PDF</button>
+      <button class="btn wa" id="btnShareVintage">WhatsApp</button>
+      <button class="btn gray" id="btnCloseVintage2">बंद</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const REWARDS = [
+  'पुस्तक विकत घेणे',
+  'आवडती गोष्ट खाणे',
+  'आवडते मासिक विकत घेणे',
+  'गरजेची वस्तू घेणे (चष्मा इ.)',
+  'स्वतःच्या नावावर ₹500 Nifty BeES घेणे'
+];
+const PUNISHMENTS = [
+  'वॉकिंग करणे',
+  'व्यायाम करणे',
+  'बातमी लिहून काढणे',
+  'पुस्तकातील पॅराग्राफ लिहिणे'
+];
+const FILTERS = ['all','pending','progress','overdue','done','incomplete','unpaid'];
+const LS_KEY = 'kamTracker.v1';
+const MR_MONTHS = ['जानेवारी','फेब्रुवारी','मार्च','एप्रिल','मे','जून','जुलै','ऑगस्ट','सप्टेंबर','ऑक्टोबर','नोव्हेंबर','डिसेंबर'];
+const MR_DAYS = ['रविवार','सोमवार','मंगळवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
+
+const I18N = {
+  mr: {
+    title: 'कामे ट्रॅकर',
+    tagline: 'सेवेला महत्त्व · वेळेत काम = वेळेत पैसे · पूर्ण + बक्षीस · प्रलंबित · उशीर + शिक्षा',
+    newTask: 'नवीन काम जोडा', mobile: 'मोबाइल अपडेट', backup: 'बॅकअप', import: 'आयात',
+    info: 'माहिती', clear: 'सर्व हटवा', autosave: 'प्रत्येक बदल आपोआप सेव्ह',
+    total: 'एकूण कामे', done: 'पूर्ण (बक्षीस)', pending: 'प्रलंबित', overdue: 'उशीरलेली (शिक्षा)',
+    paid: 'जमा रक्कम', due: 'येणे रक्कम',
+    formNew: 'नवीन काम नोंदवा', formEdit: 'काम दुरुस्त करा',
+    name: 'कामाचे नाव *', items: 'लागणाऱ्या गोष्टी / साहित्य (प्रत्येक गोष्ट नवीन ओळीत)',
+    deadline: 'मुदत (शेवटची तारीख)', amount: 'रक्कम (₹)',
+    doer: 'काम करणारा व्यक्ती (मोबाइल नंबर)', forWhom: 'काम साठी व्यक्ती (मोबाइल नंबर)',
+    status: 'स्थिती', save: 'काम सेव्ह करा', update: 'अपडेट करा', cancel: 'रद्द करा',
+    list: 'कामांची यादी (मनोरे)',
+    fAll: 'सर्व', fPend: 'प्रलंबित', fProg: 'प्रगतीत', fOver: 'उशीरलेली', fDone: 'पूर्ण झाली', fInc: 'अपूर्ण', fUnpaid: 'पैसे येणे',
+    selHint: 'मोबाइल अपडेटसाठी यादीतील ओळ क्लिक करून निवडा, मग वर <b>मोबाइल अपडेट</b> दाबा.',
+    selPicked: 'निवड: <b>{name}</b> — आता वर <b>मोबाइल अपडेट</b> दाबा.',
+    thNo: 'क्र.', thName: 'कामाचे नाव', thItems: 'लागणाऱ्या गोष्टी', thDue: 'मुदत', thAmt: 'रक्कम',
+    thPay: 'पैसे', thSt: 'स्थिती', thDoer: 'काम करणारा', thFor: 'काम साठी', thRS: 'बक्षीस / शिक्षा', thAct: 'क्रिया',
+    weekly: 'आठवड्याचा पाठपुरावा (शेवटचे ८ आठवडे)', logs: 'बक्षीस व शिक्षा नोंदी',
+    wWeek: 'आठवडा', wNew: 'नवीन कामे', wDone: 'पूर्ण कामे', wPaid: 'जमा रक्कम', wRew: 'बक्षिसे', wPun: 'शिक्षा',
+    thisWeek: ' (हा आठवडा)',
+    infoSum: 'माहिती — कसे वापरावे व शॉर्टकट',
+    footer: 'कामे ट्रॅकर · "सेवेला महत्त्व — वेळेत काम झाले तरच वेळेत पैसे हातात येतात"',
+    stPend: 'प्रलंबित', stProg: 'प्रगतीत', stDone: 'पूर्ण', stInc: 'अपूर्ण',
+    payYes: 'जमा', payNo: 'येणे', pickRew: '— बक्षीस निवडा —', pickPun: '— शिक्षा निवडा —', punDone: 'शिक्षा पूर्ण झाली',
+    complete: 'पूर्ण', revert: 'परत', pay: 'जमा', edit: 'संपादन', del: 'हटवा',
+    empty: 'या गटात कामे नाहीत.',
+    emptyAll: 'इथे जुनी कामे दिसत नाहीत. index 9 ची यादी त्या फाइलच्या ब्राउझर सेव्ह मध्ये आहे.',
+    loadSamples: 'नमुना कामे दाखवा',
+    recoverTitle: 'index 9 ची यादी कशी आणायची',
+    recover1: '१) जुनी index 9 फाइल उघडा → बॅकअप दाबा (JSON डाउनलोड).',
+    recover2: '२) येथे आयात दाबा आणि ती JSON फाइल निवडा.',
+    recover3: 'किंवा खाली JSON पेस्ट करा. किंवा ही फाइल जुन्या index 9 च्या जागी त्याच नावाने ठेवा.',
+    pasteJson: 'JSON पेस्ट करा',
+    pasteGo: 'पेस्ट सेव्ह',
+    noLogs: 'अजून नोंदी नाहीत.',
+    needName: 'कामाचे नाव आवश्यक आहे!',
+    confirmDel: 'हे काम काढून टाकायचे?',
+    confirmClear1: 'सर्व कामे व नोंदी कायमच्या हटवायच्या?',
+    confirmClear2: 'नक्की? ही क्रिया उलटवता येत नाही.',
+    backupOk: 'बॅकअप यशस्वीरीत्या लोड झाला!', backupBad: 'ही फाइल वैध बॅकअप नाही.',
+    pickTask: 'आधी यादीतील काम निवडा (ओळ क्लिक करा).',
+    noPhone: 'या कामावर मोबाइल नंबर भरा.',
+    reportSaved: 'अहवाल सेव्ह झाला.',
+    noReports: 'अजून अहवाल नाहीत.',
+    modalTitle: 'मोबाइल अपडेट / प्रगती अहवाल',
+    repType: 'अहवाल प्रकार', pct: 'प्रगती टक्केवारी (%)', details: 'अहवाल तपशील', next: 'शिल्लक काम / आगामी पावले',
+    tProgress: 'प्रगती अहवाल', tRequest: 'विनंती (करणाऱ्याला)', tComplete: 'पूर्णता अहवाल', tIssue: 'समस्या / अडचण',
+    vintage: 'विंटेज पत्र', waDoer: 'करणाऱ्याला WhatsApp', waClient: 'क्लायंटला WhatsApp', pdf: 'प्रिंट / PDF',
+    saveRep: 'अहवाल सेव्ह', hist: 'अहवाल इतिहास', letter: 'विंटेज अहवाल पत्र', close: 'बंद', share: 'WhatsApp',
+    noPhoneShort: 'नंबर नाही', doerL: 'करणारे', forL: 'साठी',
+    daysLeft: 'दिवस बाकी', dueToday: 'आज मुदत', late: 'उशीर', days: 'दिवस',
+    chipRew: 'बक्षीस', chipPun: 'शिक्षा', chipDone: 'काम पूर्ण', chipPaid: 'पैसे जमा', chipRep: 'अहवाल',
+    storage: 'या पूर्वावलोकनात जतन नाही — फाइल ब्राउझरमध्ये उघडा.',
+    phName: 'उदा. क्लायंटची वेबसाइट डिलिव्हर करणे', phItems: 'उदा. डोमेन', phPhone: 'उदा. 919876543210',
+    phDetails: 'यथार्थ प्रगती, पूर्ण झालेले काम, शिल्लक काम, अडचणी...',
+    phNext: 'आता काय करणार, कधी पर्यंत पूर्ण होईल...',
+    defaultBody: 'प्रगती अहवाल सादर.', progressLbl: 'प्रगती', nextLbl: 'पुढील पावले',
+    letterReq: 'विनंती पत्र', letterDone: 'पूर्णत्वाचा अहवाल', letterProg: 'प्रगती अहवाल पत्र',
+    subject: 'विषय', deadlineL: 'मुदत', amountL: 'रक्कम', yours: 'आपला विश्वासू',
+    place: 'पुणे', received: 'जमा', receivable: 'येणे'
+  },
+  en: {
+    title: 'Task Tracker',
+    tagline: 'Service first · On-time work = on-time pay · Done + reward · Pending · Late + penalty',
+    newTask: 'Add new task', mobile: 'Mobile update', backup: 'Backup', import: 'Import',
+    info: 'Info', clear: 'Delete all', autosave: 'Every change saves automatically',
+    total: 'Total tasks', done: 'Done (reward)', pending: 'Pending', overdue: 'Overdue (penalty)',
+    paid: 'Received', due: 'Receivable',
+    formNew: 'Add a new task', formEdit: 'Edit task',
+    name: 'Task name *', items: 'Materials / notes (one per line)',
+    deadline: 'Deadline', amount: 'Amount (₹)',
+    doer: 'Person doing the task (mobile)', forWhom: 'Person the task is for (mobile)',
+    status: 'Status', save: 'Save task', update: 'Update', cancel: 'Cancel',
+    list: 'Task list',
+    fAll: 'All', fPend: 'Pending', fProg: 'In progress', fOver: 'Overdue', fDone: 'Done', fInc: 'Incomplete', fUnpaid: 'Unpaid',
+    selHint: 'Click a row to select it, then tap <b>Mobile update</b> above.',
+    selPicked: 'Selected: <b>{name}</b> — tap <b>Mobile update</b> above.',
+    thNo: 'No.', thName: 'Task name', thItems: 'Materials', thDue: 'Deadline', thAmt: 'Amount',
+    thPay: 'Pay', thSt: 'Status', thDoer: 'Doing', thFor: 'For', thRS: 'Reward / penalty', thAct: 'Actions',
+    weekly: 'Weekly follow-up (last 8 weeks)', logs: 'Reward & penalty log',
+    wWeek: 'Week', wNew: 'New', wDone: 'Done', wPaid: 'Received', wRew: 'Rewards', wPun: 'Penalties',
+    thisWeek: ' (this week)',
+    infoSum: 'Info — how to use & shortcuts',
+    footer: 'Task Tracker · "Service first — pay follows on-time work"',
+    stPend: 'Pending', stProg: 'In progress', stDone: 'Done', stInc: 'Incomplete',
+    payYes: 'Paid', payNo: 'Due', pickRew: '— Choose reward —', pickPun: '— Choose penalty —', punDone: 'Penalty done',
+    complete: 'Done', revert: 'Undo', pay: 'Paid', edit: 'Edit', del: 'Delete',
+    empty: 'No tasks in this group.',
+    emptyAll: 'Your old list is not in this window. Index 9 stored it in that file’s browser save.',
+    loadSamples: 'Load sample tasks',
+    recoverTitle: 'How to bring in the index 9 list',
+    recover1: '1) Open the old index 9 file → click Backup (downloads JSON).',
+    recover2: '2) Here click Import and choose that JSON file.',
+    recover3: 'Or paste JSON below. Or replace the old index 9 file with this one, same name and folder.',
+    pasteJson: 'Paste JSON',
+    pasteGo: 'Load paste',
+    noLogs: 'No entries yet.',
+    needName: 'Task name is required.',
+    confirmDel: 'Delete this task?',
+    confirmClear1: 'Delete all tasks and logs?',
+    confirmClear2: 'Sure? This cannot be undone.',
+    backupOk: 'Backup loaded.', backupBad: 'Not a valid backup file.',
+    pickTask: 'Select a task in the list first (click the row).',
+    noPhone: 'Add a mobile number on this task.',
+    reportSaved: 'Report saved.',
+    noReports: 'No reports yet.',
+    modalTitle: 'Mobile update / progress report',
+    repType: 'Report type', pct: 'Progress (%)', details: 'Report details', next: 'Remaining work / next steps',
+    tProgress: 'Progress report', tRequest: 'Request (to doer)', tComplete: 'Completion report', tIssue: 'Issue / blocker',
+    vintage: 'Vintage letter', waDoer: 'WhatsApp to doer', waClient: 'WhatsApp to client', pdf: 'Print / PDF',
+    saveRep: 'Save report', hist: 'Report history', letter: 'Vintage report letter', close: 'Close', share: 'WhatsApp',
+    noPhoneShort: 'no number', doerL: 'Doer', forL: 'For',
+    daysLeft: 'days left', dueToday: 'due today', late: 'late', days: 'days',
+    chipRew: 'Reward', chipPun: 'Penalty', chipDone: 'Done', chipPaid: 'Paid', chipRep: 'Report',
+    storage: 'Saving is not available in this preview — open the file in a browser.',
+    phName: 'e.g. Deliver client website', phItems: 'e.g. Domain', phPhone: 'e.g. 919876543210',
+    phDetails: 'What is done, what is left, any issues...',
+    phNext: 'What is next, and by when...',
+    defaultBody: 'Progress report submitted.', progressLbl: 'Progress', nextLbl: 'Next steps',
+    letterReq: 'Request letter', letterDone: 'Completion report', letterProg: 'Progress report letter',
+    subject: 'Subject', deadlineL: 'Deadline', amountL: 'Amount', yours: 'Yours faithfully',
+    place: 'Pune', received: 'received', receivable: 'due'
+  }
+};
+const REWARD_SETS = {
+  mr: ['पुस्तक विकत घेणे','आवडती गोष्ट खाणे','आवडते मासिक विकत घेणे','गरजेची वस्तू घेणे (चष्मा इ.)','स्वतःच्या नावावर ₹500 Nifty BeES घेणे'],
+  en: ['Buy a book','Eat a favourite dish','Buy a favourite magazine','Buy a needed item (glasses etc.)','Buy ₹500 Nifty BeES in your name']
+};
+const PUNISH_SETS = {
+  mr: ['वॉकिंग करणे','व्यायाम करणे','बातमी लिहून काढणे','पुस्तकातील पॅराग्राफ लिहिणे'],
+  en: ['Go for a walk','Exercise','Write a news item','Copy a book paragraph']
+};
+
+let lang = (localStorage.getItem('kamTracker.lang') === 'en') ? 'en' : 'mr';
+function t(k, vars){
+  let s = (I18N[lang] && I18N[lang][k]) || I18N.mr[k] || k;
+  if(vars) Object.keys(vars).forEach(function(v){ s = String(s).split('{'+v+'}').join(vars[v]); });
+  return s;
+}
+function setLang(next){
+  lang = (next === 'en') ? 'en' : 'mr';
+  try { localStorage.setItem('kamTracker.lang', lang); } catch(e){}
+  applyLang();
+  renderAll();
+}
+function rewards(){ return REWARD_SETS[lang] || REWARD_SETS.mr; }
+function punishments(){ return PUNISH_SETS[lang] || PUNISH_SETS.mr; }
+
+let state = { tasks: [], logs: [], seq: 1 };
+let editingId = null;
+let filter = 'all';
+let selectedId = null;
+let reportTaskId = null;
+let letterPhone = '';
+
+function esc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function fmtMoney(n){ return '₹' + (Number(n)||0).toLocaleString('en-IN'); }
+function fmtDate(iso){
+  if(!iso) return '—';
+  const d = new Date(iso.length===10 ? iso+'T00:00:00' : iso);
+  if(isNaN(d)) return '—';
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+function fmtDateMr(iso){
+  if(!iso) return '—';
+  const d = new Date(iso.length===10 ? iso+'T00:00:00' : iso);
+  if(isNaN(d)) return '—';
+  return d.getDate()+' '+MR_MONTHS[d.getMonth()]+' '+d.getFullYear();
+}
+function fmtTime(iso){
+  const d = new Date(iso); if(isNaN(d)) return '';
+  return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+function dayDiff(deadline){
+  const t = new Date(); t.setHours(0,0,0,0);
+  return Math.round((new Date(deadline+'T00:00:00') - t) / 86400000);
+}
+function derivedStatus(t){
+  if(t.status==='done' || t.status==='complete') return 'done';
+  if(t.deadline && dayDiff(t.deadline)<0) return 'overdue';
+  return t.status || 'pending';
+}
+function mondayOf(d){
+  const x = new Date(d); x.setHours(0,0,0,0);
+  x.setDate(x.getDate()-((x.getDay()+6)%7));
+  return x;
+}
+function inWeek(iso, monday){
+  if(!iso) return false;
+  const d = new Date(iso), end = new Date(monday); end.setDate(end.getDate()+7);
+  return d>=monday && d<end;
+}
+function addLog(type, text){
+  state.logs.unshift({ id:'L'+Date.now(), type, text, date: new Date().toISOString() });
+}
+function findTask(id){ return state.tasks.find(t => t.id===Number(id)); }
+function digits(raw){
+  let d = String(raw||'').replace(/\D/g,'');
+  if(d.length===10) d = '91'+d;
+  return d;
+}
+function prettyPhone(raw){
+  const d = digits(raw);
+  if(!d) return '';
+  return d.length>10 ? '+'+d.slice(0,d.length-10)+' '+d.slice(-10) : d;
+}
+function save(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  catch(e){ document.getElementById('storageWarn').style.display='block'; }
+}
+function migrateTask(t){
+  if(!t || typeof t !== 'object') t = {};
+  let st = t.status || 'pending';
+  if(st === 'complete') st = 'done';
+  return Object.assign({
+    id: t.id, name: t.name || '', items: t.items || '',
+    deadline: t.deadline || '', amount: Number(t.amount)||0,
+    paid: !!t.paid, paidAt: t.paidAt || null,
+    createdAt: t.createdAt || new Date().toISOString(),
+    completedAt: t.completedAt || null,
+    reward: t.reward || '', punishment: t.punishment || '', punishmentDone: !!t.punishmentDone,
+    assigneeMobile: t.assigneeMobile || t.assigneePhone || '',
+    requesterMobile: t.requesterMobile || t.clientPhone || '',
+    reports: Array.isArray(t.reports) ? t.reports : []
+  }, t, { status: st });
+}
+function tryParseState(raw){
+  if(!raw) return null;
+  try {
+    const data = JSON.parse(raw);
+    if(data && Array.isArray(data.tasks)) return data;
+  } catch(e){}
+  return null;
+}
+function adoptData(data){
+  const rawTasks = Array.isArray(data.tasks) ? data.tasks : [];
+  state.tasks = rawTasks.map(function(x){
+    try { return migrateTask(x); } catch(e){ return migrateTask({ name: String(x||'') }); }
+  });
+  state.logs = Array.isArray(data.logs) ? data.logs : [];
+  const maxId = state.tasks.reduce(function(m,x){ return Math.max(m, Number(x.id)||0); }, 0);
+  const seqNum = Number(data.seq);
+  state.seq = (seqNum && seqNum > maxId) ? seqNum : (maxId+1);
+}
+function load(){
+  filter = 'all';
+  let best = null;
+  try {
+    const v1 = tryParseState(localStorage.getItem(LS_KEY));
+    if(v1 && v1.tasks.length){
+      adoptData(v1);
+      return;
+    }
+    const prefer = [LS_KEY, 'kamTracker.v2', 'kamTracker.v1', 'kamTracker', 'kam-tracker'];
+    prefer.forEach(k => {
+      const d = tryParseState(localStorage.getItem(k));
+      if(d && (!best || d.tasks.length > best.tasks.length)) best = d;
+    });
+    if(typeof localStorage.length === 'number'){
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(!k || k === 'kamTracker.lang') continue;
+        const d = tryParseState(localStorage.getItem(k));
+        if(d && (!best || d.tasks.length > best.tasks.length)) best = d;
+      }
+    }
+  } catch(e){
+    const w = document.getElementById('storageWarn');
+    if(w) w.style.display = 'block';
+  }
+  if(best && best.tasks.length){
+    adoptData(best);
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){}
+    return;
+  }
+  if(best && Array.isArray(best.tasks)){
+    adoptData(best);
+    return;
+  }
+  seed(false);
+}
+function seed(persist){
+  const now = new Date();
+  const iso = off => { const d=new Date(now); d.setDate(d.getDate()+off); const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); };
+  state = {
+    seq: 4, logs: [
+      { id:'L1', type:'done', text:'काम पूर्ण: नमुना वेबसाइट', date: now.toISOString() }
+    ],
+    tasks: [
+      migrateTask({ id:1, name:'नमुना: क्लायंची वेबसाइट वेळेत डिलिव्हर केली', items:'डोमेन\nहोस्टिंग', deadline:iso(-1), amount:8000, paid:true, paidAt:now.toISOString(), status:'done', createdAt:now.toISOString(), completedAt:now.toISOString(), reward:REWARDS[0], punishment:'', punishmentDone:false }),
+      migrateTask({ id:2, name:'नमुना: दुकानाचे बिल बनवून देणे', items:'बिल डेटा', deadline:iso(-3), amount:1500, paid:false, paidAt:null, status:'incomplete', createdAt:now.toISOString(), completedAt:null, reward:'', punishment:PUNISHMENTS[0], punishmentDone:false }),
+      migrateTask({ id:3, name:'नमुना: मोबाइल रिपेअर करून परत देणे', items:'नवीन स्क्रीन', deadline:iso(4), amount:2500, paid:false, paidAt:null, status:'pending', createdAt:now.toISOString(), completedAt:null, reward:'', punishment:'', punishmentDone:false })
+    ]
+  };
+  if(persist !== false) save();
+}
+
+function formOpen(){ return document.getElementById('formPanel').style.display !== 'none'; }
+function openForm(){ document.getElementById('formPanel').style.display=''; document.getElementById('taskName').focus(); }
+function closeForm(){ resetForm(); document.getElementById('formPanel').style.display='none'; }
+function toggleForm(){
+  if(formOpen() && !editingId) closeForm();
+  else { if(editingId) resetForm(); openForm(); }
+}
+function resetForm(){
+  editingId = null;
+  ['taskName','taskItems','taskDeadline','taskAmount','taskAssigneeMobile','taskRequesterMobile'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('taskStatus').value = 'pending';
+  document.getElementById('btnSubmit').textContent = t('save');
+  document.getElementById('formTitle').textContent = t('formNew');
+}
+function submitForm(){
+  if(!formOpen()){ openForm(); return; }
+  const name = document.getElementById('taskName').value.trim();
+  if(!name){ openForm(); alert(t('needName')); return; }
+  const payload = {
+    name,
+    items: document.getElementById('taskItems').value.trim(),
+    deadline: document.getElementById('taskDeadline').value || '',
+    amount: Number(document.getElementById('taskAmount').value)||0,
+    assigneeMobile: document.getElementById('taskAssigneeMobile').value.trim(),
+    requesterMobile: document.getElementById('taskRequesterMobile').value.trim(),
+    status: document.getElementById('taskStatus').value
+  };
+  if(editingId){
+    const t = findTask(editingId);
+    if(t){
+      Object.assign(t, payload);
+      if(payload.status==='done' && !t.completedAt) t.completedAt = new Date().toISOString();
+      if(payload.status!=='done') t.completedAt = null;
+    }
+  } else {
+    state.tasks.push(migrateTask(Object.assign({
+      id: state.seq++, paid:false, paidAt:null, createdAt:new Date().toISOString(),
+      completedAt: payload.status==='done' ? new Date().toISOString() : null,
+      reward:'', punishment:'', punishmentDone:false, reports:[]
+    }, payload)));
+  }
+  closeForm(); save(); renderAll();
+}
+
+function setText(sel, text){
+  const el = typeof sel === 'string' ? document.querySelector(sel) : sel;
+  if(el) el.textContent = text;
+}
+function applyLang(){
+  document.documentElement.lang = lang === 'en' ? 'en' : 'mr';
+  document.title = t('title');
+  setText('header h1', t('title'));
+  setText('header p', t('tagline'));
+  document.getElementById('btnNew').textContent = t('newTask');
+  document.getElementById('btnMobileUpdate').textContent = t('mobile');
+  document.getElementById('btnBackup').textContent = t('backup');
+  const imp = document.getElementById('lblImport');
+  if(imp) imp.textContent = t('import');
+  document.getElementById('btnInfo').textContent = t('info');
+  document.getElementById('btnClearAll').textContent = t('clear');
+  document.getElementById('autoSaveHint').textContent = t('autosave');
+  document.getElementById('storageWarn').textContent = t('storage');
+  const cards = [
+    ['stTotal','total'],['stDone','done'],['stPend','pending'],
+    ['stOver','overdue'],['stPaid','paid'],['stDue','due']
+  ];
+  cards.forEach(([id,key]) => {
+    const el = document.getElementById(id);
+    if(el && el.previousElementSibling) el.previousElementSibling.textContent = t(key);
+  });
+  document.getElementById('formTitle').textContent = editingId ? t('formEdit') : t('formNew');
+  const labels = document.querySelectorAll('#formPanel .formgrid label');
+  const labKeys = ['name','items','deadline','amount','doer','forWhom','status'];
+  labels.forEach((lab,i) => { if(labKeys[i]) lab.textContent = t(labKeys[i]); });
+  document.getElementById('taskName').placeholder = t('phName');
+  document.getElementById('taskItems').placeholder = t('phItems');
+  document.getElementById('taskAssigneeMobile').placeholder = t('phPhone');
+  document.getElementById('taskRequesterMobile').placeholder = t('phPhone');
+  const stSel = document.getElementById('taskStatus');
+  [['pending','stPend'],['progress','stProg'],['done','stDone'],['incomplete','stInc']].forEach(([v,k]) => {
+    const o = stSel.querySelector('option[value="'+v+'"]'); if(o) o.textContent = t(k);
+  });
+  document.getElementById('btnSubmit').textContent = editingId ? t('update') : t('save');
+  document.getElementById('btnCancelEdit').textContent = t('cancel');
+  const listH = document.getElementById('listTitle');
+  if(listH) listH.textContent = t('list');
+  const chips = document.querySelectorAll('.chip-btn');
+  const chipKeys = ['fAll','fPend','fProg','fOver','fDone','fInc','fUnpaid'];
+  chips.forEach((c,i) => { if(chipKeys[i]) c.textContent = t(chipKeys[i]); });
+  const ths = document.querySelectorAll('table.grid thead th');
+  ['thNo','thName','thItems','thDue','thAmt','thPay','thSt','thDoer','thFor','thRS','thAct'].forEach((k,i) => {
+    if(ths[i]) ths[i].textContent = t(k);
+  });
+  document.querySelector('#weeklySection h2').textContent = t('weekly');
+  document.querySelector('#logsSection h2').textContent = t('logs');
+  const wth = document.querySelectorAll('#weeklySection thead th');
+  ['wWeek','wNew','wDone','wPaid','wRew','wPun'].forEach((k,i) => { if(wth[i]) wth[i].textContent = t(k); });
+  document.querySelector('#infoTab summary').textContent = t('infoSum');
+  document.querySelector('footer').textContent = t('footer');
+  document.getElementById('modalTitle').textContent = t('modalTitle');
+  const rLabs = document.querySelectorAll('#reportModal .form-row label');
+  ['repType','pct','details','next'].forEach((k,i) => { if(rLabs[i]) rLabs[i].textContent = t(k); });
+  const rOpts = document.querySelectorAll('#reportType option');
+  ['tProgress','tRequest','tComplete','tIssue'].forEach((k,i) => { if(rOpts[i]) rOpts[i].textContent = t(k); });
+  document.getElementById('reportDetails').placeholder = t('phDetails');
+  document.getElementById('reportNextSteps').placeholder = t('phNext');
+  document.getElementById('btnCancelReport').textContent = t('cancel');
+  document.getElementById('btnVintage').textContent = t('vintage');
+  document.getElementById('btnWaDoer').textContent = t('waDoer');
+  document.getElementById('btnWaClient').textContent = t('waClient');
+  document.getElementById('btnPdf').textContent = t('pdf');
+  document.getElementById('btnSaveReport').textContent = t('saveRep');
+  document.querySelector('#reportModal h4').textContent = t('hist');
+  document.querySelector('#vintageModal .modal-header h3').textContent = t('letter');
+  document.getElementById('btnPrintVintage').textContent = t('pdf');
+  document.getElementById('btnShareVintage').textContent = t('share');
+  document.getElementById('btnCloseVintage2').textContent = t('close');
+  document.getElementById('langMr').classList.toggle('on', lang==='mr');
+  document.getElementById('langEn').classList.toggle('on', lang==='en');
+  updateSelHint();
+}
+
+function markSelected(id){
+  selectedId = Number(id);
+  document.querySelectorAll('#tbody tr[data-rowid]').forEach(tr => {
+    tr.classList.toggle('sel', Number(tr.dataset.rowid) === selectedId);
+  });
+  updateSelHint();
+}
+function updateSelHint(){
+  const sel = findTask(selectedId);
+  const hint = document.getElementById('selHint');
+  hint.innerHTML = sel ? t('selPicked', {name: esc(sel.name)}) : t('selHint');
+}
+
+function statusLabel(task){
+  if(task.status==='done' || task.status==='complete')
+    return '<span class="status-badge status-complete">'+t('stDone')+'</span> ('+fmtDate(task.completedAt)+')';
+  if(task.status==='progress') return '<span class="status-badge status-progress">'+t('stProg')+'</span>';
+  if(task.status==='incomplete') return '<span class="status-badge status-incomplete">'+t('stInc')+'</span>';
+  if(!task.deadline) return '<span class="status-badge status-pending">'+t('stPend')+'</span>';
+  const d = dayDiff(task.deadline);
+  if(d>0) return '<span class="status-badge status-pending">'+t('stPend')+'</span> '+d+' '+t('daysLeft');
+  if(d===0) return '<span class="status-badge status-pending">'+t('stPend')+'</span> '+t('dueToday');
+  return '<span class="status-badge status-incomplete">'+t('late')+'</span> '+Math.abs(d)+' '+t('days');
+}
+function formatMobile(num){
+  const p = prettyPhone(num);
+  return p ? '<a class="mobile-link" href="tel:+'+digits(num)+'">'+esc(p)+'</a>' : '<span style="color:#999">—</span>';
+}
+
+function filteredList(){
+  let list = state.tasks.slice().sort((a,b) => {
+    const aDone = (a.status==='done' || derivedStatus(a)==='done') ? 1 : 0;
+    const bDone = (b.status==='done' || derivedStatus(b)==='done') ? 1 : 0;
+    if(aDone!==bDone) return aDone-bDone;
+    return String(b.createdAt||'').localeCompare(String(a.createdAt||'')) || (b.id-a.id);
+  });
+  if(filter==='pending') list = list.filter(t => t.status==='pending' && derivedStatus(t)!=='overdue');
+  if(filter==='progress') list = list.filter(t => t.status==='progress');
+  if(filter==='overdue') list = list.filter(t => derivedStatus(t)==='overdue');
+  if(filter==='done') list = list.filter(t => t.status==='done' || derivedStatus(t)==='done');
+  if(filter==='incomplete') list = list.filter(t => t.status==='incomplete');
+  if(filter==='unpaid') list = list.filter(t => !t.paid);
+  return list;
+}
+
+function optionList(list, stored){
+  const vals = list.slice();
+  if(stored && vals.indexOf(stored) < 0) vals.unshift(stored);
+  return vals;
+}
+function renderTasks(){
+  const tb = document.getElementById('tbody');
+  const list = filteredList();
+  updateSelHint();
+  const rec = document.getElementById('recoverPanel');
+  if(rec) rec.style.display = state.tasks.length ? 'none' : '';
+  if(rec && !state.tasks.length){
+    const title = document.getElementById('recoverTitle');
+    const steps = document.getElementById('recoverSteps');
+    const ta = document.getElementById('pasteJson');
+    if(title) title.textContent = t('recoverTitle');
+    if(steps) steps.innerHTML = '<li>'+t('recover1')+'</li><li>'+t('recover2')+'</li><li>'+t('recover3')+'</li>';
+    if(ta) ta.placeholder = t('pasteJson');
+    const bi = document.getElementById('btnRecoverImport'); if(bi) bi.textContent = t('import');
+    const bp = document.getElementById('btnPasteGo'); if(bp) bp.textContent = t('pasteGo');
+    const bs = document.getElementById('btnLoadSamples'); if(bs) bs.textContent = t('loadSamples');
+  }
+  if(!list.length){
+    tb.innerHTML = '<tr class="empty-row"><td colspan="11">'+(state.tasks.length?t('empty'):t('emptyAll'))+'</td></tr>';
+    return;
+  }
+  tb.innerHTML = list.map((task,i) => {
+    const st = derivedStatus(task);
+    const rowCls = (task.status==='done'||st==='done') ? 'row-done' : (st==='overdue' ? 'row-over' : 'row-pend');
+    let rs = '<span style="opacity:.6">—</span>';
+    if(task.status==='done' || st==='done'){
+      rs = '<select data-act="reward" data-id="'+task.id+'"><option value="">'+t('pickRew')+'</option>'+
+        optionList(rewards(), task.reward).map(r=>'<option '+(task.reward===r?'selected':'')+' value="'+esc(r)+'">'+esc(r)+'</option>').join('')+'</select>';
+    } else if(st==='overdue' || task.status==='incomplete'){
+      rs = '<select data-act="punish" data-id="'+task.id+'"><option value="">'+t('pickPun')+'</option>'+
+        optionList(punishments(), task.punishment).map(p=>'<option '+(task.punishment===p?'selected':'')+' value="'+esc(p)+'">'+esc(p)+'</option>').join('')+'</select>'+
+        (task.punishment?'<br><label style="font-size:12px;"><input type="checkbox" data-act="punishDone" data-id="'+task.id+'" '+(task.punishmentDone?'checked':'')+'> '+t('punDone')+'</label>':'');
+    }
+    const acts =
+      (task.status!=='done' && st!=='done'
+        ? '<button class="btn small" data-act="complete" data-id="'+task.id+'">'+t('complete')+'</button>'
+        : '<button class="btn small gray" data-act="revert" data-id="'+task.id+'">'+t('revert')+'</button>')+
+      (!task.paid ? ' <button class="btn small blue" data-act="pay" data-id="'+task.id+'">'+t('pay')+'</button>' : '')+
+      ' <button class="btn small gray" data-act="edit" data-id="'+task.id+'">'+t('edit')+'</button>'+
+      ' <button class="btn small red" data-act="del" data-id="'+task.id+'">'+t('del')+'</button>';
+    return '<tr class="'+rowCls+(selectedId===task.id?' sel':'')+'" data-rowid="'+task.id+'">'+
+      '<td>'+(i+1)+'</td>'+
+      '<td class="cell-name">'+esc(task.name)+'</td>'+
+      '<td class="cell-items">'+esc(task.items||'—')+'</td>'+
+      '<td>'+fmtDate(task.deadline)+'</td>'+
+      '<td class="money-badge">'+(Number(task.amount)?fmtMoney(task.amount):'—')+'</td>'+
+      '<td>'+(task.paid?t('payYes'):t('payNo'))+'</td>'+
+      '<td>'+statusLabel(task)+'</td>'+
+      '<td>'+formatMobile(task.assigneeMobile)+'</td>'+
+      '<td>'+formatMobile(task.requesterMobile)+'</td>'+
+      '<td>'+rs+'</td>'+
+      '<td class="actions">'+acts+'</td></tr>';
+  }).join('');
+}
+
+function renderStats(){
+  let done=0,pend=0,over=0,paid=0,due=0;
+  state.tasks.forEach(t => {
+    const st = derivedStatus(t);
+    if(st==='done') done++; else if(st==='overdue') over++; else pend++;
+    const a = Number(t.amount)||0;
+    if(t.paid) paid+=a; else due+=a;
+  });
+  document.getElementById('stTotal').textContent = state.tasks.length;
+  document.getElementById('stDone').textContent = done;
+  document.getElementById('stPend').textContent = pend;
+  document.getElementById('stOver').textContent = over;
+  document.getElementById('stPaid').textContent = fmtMoney(paid);
+  document.getElementById('stDue').textContent = fmtMoney(due);
+}
+
+function renderWeekly(){
+  const thisMonday = mondayOf(new Date());
+  let html = '';
+  for(let i=0;i<8;i++){
+    const m = new Date(thisMonday); m.setDate(m.getDate()-7*i);
+    const e = new Date(m); e.setDate(e.getDate()+6);
+    const neu = state.tasks.filter(t => inWeek(t.createdAt,m)).length;
+    const don = state.tasks.filter(t => inWeek(t.completedAt,m)).length;
+    const pay = state.tasks.filter(t => t.paid && inWeek(t.paidAt,m)).reduce((s,t)=>s+(Number(t.amount)||0),0);
+    const rew = state.logs.filter(l => l.type==='reward' && inWeek(l.date,m)).length;
+    const pun = state.logs.filter(l => l.type==='punish' && inWeek(l.date,m)).length;
+    html += '<tr'+(i===0?' class="thisweek"':'')+'>'+
+      '<td>'+m.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+' – '+e.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+(i===0?t('thisWeek'):'')+'</td>'+
+      '<td>'+neu+'</td><td>'+don+'</td><td>'+fmtMoney(pay)+'</td><td>'+rew+'</td><td>'+pun+'</td></tr>';
+  }
+  document.getElementById('weeklyBody').innerHTML = html;
+}
+
+function renderLogs(){
+  const ul = document.getElementById('logList');
+  if(!state.logs.length){ ul.innerHTML = '<li>'+t('noLogs')+'</li>'; return; }
+  const names = { reward:t('chipRew'), punish:t('chipPun'), done:t('chipDone'), paid:t('chipPaid'), report:t('chipRep') };
+  ul.innerHTML = state.logs.slice(0,100).map(l =>
+    '<li><span class="log-date">'+fmtDate(l.date)+'</span><span class="log-chip '+l.type+'">'+(names[l.type]||l.type)+'</span><span>'+esc(l.text)+'</span>'+
+    '<button class="log-del" data-logid="'+l.id+'">✕</button></li>'
+  ).join('');
+}
+
+function renderAll(){ renderStats(); renderTasks(); renderWeekly(); renderLogs(); }
+
+function startEdit(task){
+  editingId = task.id;
+  document.getElementById('taskName').value = task.name;
+  document.getElementById('taskItems').value = task.items||'';
+  document.getElementById('taskDeadline').value = task.deadline||'';
+  document.getElementById('taskAmount').value = task.amount||'';
+  document.getElementById('taskAssigneeMobile').value = task.assigneeMobile||'';
+  document.getElementById('taskRequesterMobile').value = task.requesterMobile||'';
+  document.getElementById('taskStatus').value = (task.status==='complete'?'done':task.status)||'pending';
+  document.getElementById('btnSubmit').textContent = t('update');
+  document.getElementById('formTitle').textContent = t('formEdit');
+  openForm();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function backup(){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));
+  a.download = 'kam-tracker-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function letterKind(){
+  const v = document.getElementById('reportType').value;
+  if(v==='request') return 'request';
+  if(v==='completion') return 'complete';
+  return 'progress';
+}
+function reportBodyText(){
+  const d = document.getElementById('reportDetails').value.trim();
+  const n = document.getElementById('reportNextSteps').value.trim();
+  const pct = document.getElementById('reportProgress').value;
+  return (d || 'प्रगती अहवाल सादर.') + (pct ? '\n\nप्रगती: '+pct+'%' : '') + (n ? '\n\nपुढील पावले:\n'+n : '');
+}
+function buildVintageHTML(t, kind, body){
+  const now = new Date();
+  const title = kind==='request'?'विनंती पत्र': kind==='complete'?'पूर्णत्वाचा अहवाल':'प्रगती अहवाल पत्र';
+  return '<div class="vintage-report">'+
+    '<div class="vintage-header"><h1>'+esc(title)+'</h1>'+
+    '<div class="subtitle">कामे ट्रॅकर · पुणे · '+esc(fmtDateMr(now.toISOString()))+' · '+esc(MR_DAYS[now.getDay()])+' · '+esc(fmtTime(now.toISOString()))+'</div></div>'+
+    '<div class="vintage-field"><span class="vintage-label">विषय:</span> '+esc(t.name)+'</div>'+
+    '<div class="vintage-field"><span class="vintage-label">स्थिती:</span> '+esc(t.status==='done'?'पूर्ण':(t.status==='progress'?'प्रगतीत':(t.status==='incomplete'?'अपूर्ण':'प्रलंबित')))+'</div>'+
+    (t.deadline?'<div class="vintage-field"><span class="vintage-label">मुदत:</span> '+esc(fmtDateMr(t.deadline))+'</div>':'')+
+    (Number(t.amount)?'<div class="vintage-field"><span class="vintage-label">रक्कम:</span> '+esc(fmtMoney(t.amount))+(t.paid?' (जमा)':' (येणे)')+'</div>':'')+
+    (t.assigneeMobile?'<div class="vintage-field"><span class="vintage-label">करणारे:</span> '+esc(prettyPhone(t.assigneeMobile))+'</div>':'')+
+    (t.requesterMobile?'<div class="vintage-field"><span class="vintage-label">ज्यांच्यासाठी:</span> '+esc(prettyPhone(t.requesterMobile))+'</div>':'')+
+    '<div class="vintage-divider"></div>'+
+    '<div class="vintage-body">'+esc(body)+'</div>'+
+    '<div class="vintage-footer">आपला विश्वासू,<br>कामे ट्रॅकर</div></div>';
+}
+function buildVintageText(t, kind, body){
+  const now = new Date();
+  const title = kind==='request'?'विनंती पत्र': kind==='complete'?'पूर्णत्वाचा अहवाल':'प्रगती अहवाल पत्र';
+  return '═══════════════════════\n✦ कामे ट्रॅकर\n'+title+'\n═══════════════════════\n\nदिनांक: '+fmtDateMr(now.toISOString())+' ('+MR_DAYS[now.getDay()]+')\nवेळ: '+fmtTime(now.toISOString())+'\n\nविषय: '+t.name+'\nस्थिती: '+(t.status==='done'?'पूर्ण':t.status)+'\n'+(t.deadline?('मुदत: '+fmtDateMr(t.deadline)+'\n'):'')+'\n'+body+'\n\nआपला विश्वासू,\nकामे ट्रॅकर';
+}
+function showVintage(t, kind, body, phone){
+  letterPhone = phone||'';
+  document.getElementById('vintageReportContent').innerHTML = buildVintageHTML(t, kind, body);
+  document.getElementById('vintageModal').classList.add('active');
+}
+function openWa(phone, text){
+  const d = digits(phone);
+  if(!d){ alert(t('noPhone')); return; }
+  window.open('https://wa.me/'+d+'?text='+encodeURIComponent(text),'_blank','noopener');
+}
+
+function openMobileUpdate(){
+  const t = findTask(selectedId);
+  if(!t){ alert(t('pickTask')); return; }
+  reportTaskId = t.id;
+  document.getElementById('modalTitle').textContent = 'मोबाइल अपडेट — '+t.name;
+  document.getElementById('repPeople').textContent =
+    'करणारे: '+(prettyPhone(t.assigneeMobile)||'नंबर नाही')+'   |   साठी: '+(prettyPhone(t.requesterMobile)||'नंबर नाही');
+  document.getElementById('reportDetails').value = '';
+  document.getElementById('reportNextSteps').value = '';
+  document.getElementById('reportProgress').value = t.status==='done'?'100':'0';
+  document.getElementById('reportType').value = t.status==='done'?'completion':'progress';
+  renderHist(t);
+  document.getElementById('reportModal').classList.add('active');
+}
+function renderHist(t){
+  const box = document.getElementById('reportHistory');
+  const reps = t.reports||[];
+  if(!reps.length){ box.innerHTML = '<p class="hint">अजून अहवाल नाहीत.</p>'; return; }
+  box.innerHTML = reps.slice().reverse().map(r =>
+    '<div style="border:1px solid #e1e4e8;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:13px;">'+
+    '<b>'+esc(r.kind)+'</b> · '+esc(fmtDate(r.date))+' · '+esc(fmtTime(r.date))+'<br>'+esc((r.body||'').slice(0,200))+
+    '</div>'
+  ).join('');
+}
+function persistReport(){
+  const t = findTask(reportTaskId); if(!t) return null;
+  const kind = letterKind();
+  const body = reportBodyText();
+  t.reports = t.reports||[];
+  t.reports.push({ id:'R'+Date.now(), kind, body, date: new Date().toISOString() });
+  addLog('report', t.name);
+  save(); renderAll(); renderHist(t);
+  return { t, kind, body };
+}
+
+function cycleFilter(){
+  const i = FILTERS.indexOf(filter);
+  filter = FILTERS[(i+1)%FILTERS.length];
+  document.querySelectorAll('.chip-btn').forEach(b => b.classList.toggle('active', b.dataset.filter===filter));
+  renderTasks();
+}
+function toggleInfo(){
+  const d = document.getElementById('infoTab');
+  d.open = !d.open;
+  if(d.open) d.scrollIntoView({behavior:'smooth'});
+}
+function runFn(n){
+  switch(n){
+    case 1: toggleInfo(); break;
+    case 2: toggleForm(); break;
+    case 3: submitForm(); break;
+    case 4: closeForm(); closeModals(); break;
+    case 5: renderAll(); break;
+    case 6: backup(); break;
+    case 7: document.getElementById('fileImport').click(); break;
+    case 8: cycleFilter(); break;
+    case 9: document.getElementById('weeklySection').scrollIntoView({behavior:'smooth'}); break;
+    case 10: document.getElementById('logsSection').scrollIntoView({behavior:'smooth'}); break;
+    case 11: if(selectedId){ const t=findTask(selectedId); if(t) startEdit(t); } break;
+    case 12: openMobileUpdate(); break;
+  }
+}
+function closeModals(){
+  document.getElementById('reportModal').classList.remove('active');
+  document.getElementById('vintageModal').classList.remove('active');
+}
+
+document.getElementById('btnNew').addEventListener('click', toggleForm);
+document.getElementById('btnSubmit').addEventListener('click', submitForm);
+document.getElementById('btnCancelEdit').addEventListener('click', closeForm);
+document.getElementById('btnMobileUpdate').addEventListener('click', openMobileUpdate);
+document.getElementById('btnBackup').addEventListener('click', backup);
+document.getElementById('btnInfo').addEventListener('click', toggleInfo);
+document.getElementById('taskName').addEventListener('keydown', e => { if(e.key==='Enter') submitForm(); });
+
+document.getElementById('tbody').addEventListener('click', e => {
+  if(e.target.id==='btnLoadSamples'){ seed(); renderAll(); return; }
+  if(e.target.id==='btnEmptyImport'){ document.getElementById('fileImport').click(); return; }
+  const row = e.target.closest('tr[data-rowid]');
+  if(row) markSelected(row.dataset.rowid);
+  if(e.target.closest('select, input, label, a')) return;
+  const btn = e.target.closest('button[data-act]');
+  if(!btn) return;
+  const task = findTask(btn.dataset.id); if(!task) return;
+  const act = btn.dataset.act;
+  if(act==='complete'){ task.status='done'; task.completedAt=new Date().toISOString(); addLog('done', t('chipDone')+': '+task.name); }
+  else if(act==='revert'){ task.status='pending'; task.completedAt=null; }
+  else if(act==='pay'){ task.paid=true; task.paidAt=new Date().toISOString(); addLog('paid', fmtMoney(task.amount)+' · '+task.name); }
+  else if(act==='edit'){ startEdit(task); return; }
+  else if(act==='del'){ if(!confirm(t('confirmDel')+' "'+task.name+'"')) return; state.tasks=state.tasks.filter(x=>x.id!==task.id); }
+  else return;
+  save(); renderAll();
+});
+document.getElementById('tbody').addEventListener('mousedown', e => {
+  if(e.target.closest('select')) e.stopPropagation();
+});
+document.getElementById('tbody').addEventListener('change', e => {
+  const el = e.target, task = findTask(el.dataset.id); if(!task) return;
+  if(el.dataset.act==='reward'){ task.reward=el.value; if(el.value) addLog('reward', el.value+' · '+task.name); }
+  if(el.dataset.act==='punish'){ task.punishment=el.value; task.punishmentDone=false; if(el.value) addLog('punish', el.value+' · '+task.name); }
+  if(el.dataset.act==='punishDone'){ task.punishmentDone=el.checked; }
+  save();
+  if(el.dataset.act==='punish' || el.dataset.act==='punishDone') renderTasks();
+});
+document.getElementById('logList').addEventListener('click', e => {
+  const b = e.target.closest('.log-del'); if(!b) return;
+  state.logs = state.logs.filter(l => l.id!==b.dataset.logid); save(); renderAll();
+});
+document.querySelectorAll('.chip-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    filter = b.dataset.filter;
+    document.querySelectorAll('.chip-btn').forEach(x => x.classList.toggle('active', x===b));
+    renderTasks();
+  });
+});
+document.querySelector('.chip-btn[data-filter="all"]').classList.add('active');
+
+
+function stripBom(s){
+  s = String(s==null?'':s);
+  if(s.charCodeAt(0)===0xFEFF) s = s.slice(1);
+  return s.replace(/^\uFEFF/, '');
+}
+function normalizeBackup(raw){
+  let text = stripBom(raw).trim();
+  if(!text) throw new Error('empty');
+  if(text.slice(0,3)==='```'){
+    text = text.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+  }
+  let data;
+  try { data = JSON.parse(text); }
+  catch(e1){
+    const a = text.indexOf('{'), b = text.lastIndexOf('}');
+    const c = text.indexOf('['), d = text.lastIndexOf(']');
+    if(a>=0 && b>a) data = JSON.parse(text.slice(a,b+1));
+    else if(c>=0 && d>c) data = JSON.parse(text.slice(c,d+1));
+    else throw e1;
+  }
+  if(Array.isArray(data)) data = { tasks: data, logs: [], seq: data.length+1 };
+  if(typeof data !== 'object' || !data) throw new Error('not-object');
+  let tasks = data.tasks;
+  if(!Array.isArray(tasks) && Array.isArray(data.task)) tasks = data.task;
+  if(!Array.isArray(tasks) && Array.isArray(data.items)) tasks = data.items;
+  if(!Array.isArray(tasks)) throw new Error('no-tasks');
+  return {
+    tasks: tasks,
+    logs: Array.isArray(data.logs) ? data.logs : [],
+    seq: data.seq,
+    reports: data.reports,
+    settings: data.settings
+  };
+}
+function importStateObject(data){
+  const norm = (data && Array.isArray(data.tasks)) ? data : normalizeBackup(JSON.stringify(data));
+  if(!norm || !Array.isArray(norm.tasks)) throw new Error('no-tasks');
+  adoptData(norm);
+  save();
+  try { closeForm(); } catch(e){}
+  try { applyLang(); } catch(e){}
+  renderAll();
+}
+function importFromText(text){
+  importStateObject(normalizeBackup(text));
+  alert(t('backupOk') + ' ('+state.tasks.length+')');
+}
+document.getElementById('btnRecoverImport').addEventListener('click', function(){ document.getElementById('fileImport').click(); });
+document.getElementById('btnPasteGo').addEventListener('click', function(){
+  var text = (document.getElementById('pasteJson').value||'').trim();
+  if(!text){ document.getElementById('fileImport').click(); return; }
+  try { importFromText(text); }
+  catch(err){ alert(t('backupBad')); }
+});
+document.getElementById('btnLoadSamples').addEventListener('click', function(){ seed(true); applyLang(); renderAll(); });
+document.getElementById('fileImport').addEventListener('change', e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      importFromText(r.result);
+    } catch(err){
+      alert(t('backupBad') + (err && err.message ? ' — ' + err.message : ''));
+    }
+  };
+  r.readAsText(f, 'UTF-8'); e.target.value='';
+});
+document.getElementById('btnClearAll').addEventListener('click', () => {
+  if(!confirm(t('confirmClear1'))) return;
+  if(!confirm(t('confirmClear2'))) return;
+  state = { tasks:[], logs:[], seq:1 }; save(); closeForm(); renderAll();
+});
+
+document.getElementById('btnCloseReport').addEventListener('click', closeModals);
+document.getElementById('btnCancelReport').addEventListener('click', closeModals);
+document.getElementById('btnCloseVintage').addEventListener('click', () => document.getElementById('vintageModal').classList.remove('active'));
+document.getElementById('btnCloseVintage2').addEventListener('click', () => document.getElementById('vintageModal').classList.remove('active'));
+document.getElementById('btnSaveReport').addEventListener('click', () => { persistReport(); alert(t('reportSaved')); });
+document.getElementById('langMr').addEventListener('click', function(){ setLang('mr'); });
+document.getElementById('langEn').addEventListener('click', function(){ setLang('en'); });
+document.getElementById('btnVintage').addEventListener('click', () => {
+  const t = findTask(reportTaskId); if(!t) return;
+  showVintage(t, letterKind(), reportBodyText(), t.requesterMobile||t.assigneeMobile);
+});
+document.getElementById('btnWaDoer').addEventListener('click', () => {
+  const rec = persistReport(); if(!rec) return;
+  openWa(rec.t.assigneeMobile, buildVintageText(rec.t, rec.kind==='complete'?'request':rec.kind, rec.body));
+});
+document.getElementById('btnWaClient').addEventListener('click', () => {
+  const rec = persistReport(); if(!rec) return;
+  openWa(rec.t.requesterMobile, buildVintageText(rec.t, rec.kind, rec.body));
+});
+document.getElementById('btnPdf').addEventListener('click', () => {
+  const t = findTask(reportTaskId); if(!t) return;
+  showVintage(t, letterKind(), reportBodyText(), t.requesterMobile);
+  setTimeout(() => window.print(), 200);
+});
+document.getElementById('btnPrintVintage').addEventListener('click', () => window.print());
+document.getElementById('btnShareVintage').addEventListener('click', () => {
+  const t = findTask(reportTaskId); if(!t) return;
+  openWa(letterPhone || t.requesterMobile || t.assigneeMobile, buildVintageText(t, letterKind(), reportBodyText()));
+});
+
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName||'').toLowerCase();
+  const typing = tag==='input' || tag==='textarea' || tag==='select';
+  if(e.key==='Escape'){ closeModals(); if(formOpen()) closeForm(); return; }
+  if(/^F([1-9]|1[0-2])$/.test(e.key)){
+    e.preventDefault();
+    runFn(Number(e.key.slice(1)));
+    return;
+  }
+  if(typing) return;
+});
+
+try { load(); } catch(e){ try { seed(); } catch(e2){} }
+applyLang();
+renderAll();
+</script>
+<script id="polishScript">
+/* ---- कामे ट्रॅकर polish layer: tap sounds · haptics · toasts · PWA ----
+   Same sound engine as the billing app. No app logic is changed —
+   this layer only adds feedback (sound, vibration, toasts). */
+(function () {
+  'use strict';
+
+  /* ---------- sound engine (WebAudio; silent if blocked) ---------- */
+  var soundOn = true;
+  try { soundOn = localStorage.getItem('kamSound') !== '0'; } catch (e) {}
+  var actx = null;
+  function beep(freq, ms, vol) {
+    if (!soundOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = freq || 880;
+      g.gain.setValueAtTime(vol || 0.045, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (ms || 60) / 1000);
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + (ms || 60) / 1000);
+    } catch (e) {}
+  }
+  function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms || 10); } catch (e) {} }
+  var S = {
+    tick: function () { beep(840, 45, 0.035); buzz(8); },
+    ok:   function () { beep(660, 70); setTimeout(function () { beep(990, 95); }, 85); buzz(20); },
+    pay:  function () { beep(660, 75); setTimeout(function () { beep(880, 75); }, 90); setTimeout(function () { beep(1175, 110); }, 180); buzz(30); },
+    del:  function () { beep(300, 70, 0.045); buzz(18); },
+    err:  function () { beep(210, 130, 0.05); buzz(35); }
+  };
+  window.kamBeep = beep; /* debug/testing hook */
+
+  /* ---------- toast ---------- */
+  var toastEl = null, toastTimer = null;
+  function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function toast(msg, opts) {
+    opts = opts || {};
+    if (!toastEl) { toastEl = document.createElement('div'); toastEl.className = 'kam-toast'; document.body.appendChild(toastEl); }
+    toastEl.className = 'kam-toast show' + (opts.err ? ' err' : '');
+    toastEl.innerHTML = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, opts.ms || 1700);
+  }
+  window.kamToast = toast;
+
+  /* native alert -> toast (mobile friendly; confirm() stays native) */
+  window.alert = function (msg) {
+    var m = String(msg == null ? '' : msg);
+    var bad = /आवश्यक|नाही|वैध नाही|required|not a valid/i.test(m);
+    toast(escHtml(m), { err: bad, ms: bad ? 2400 : 2000 });
+    if (bad) S.err();
+  };
+
+  /* ---------- tap sounds for everything ---------- */
+  document.addEventListener('click', function (ev) {
+    var el = ev.target.closest ? ev.target.closest('button, tr[data-rowid], summary, .log-del') : null;
+    if (!el) return;
+    if (el.id === 'btnSound' || el.id === 'btnSubmit') return; /* own handlers */
+    var act = el.getAttribute('data-act');
+    if (act === 'complete') { S.ok(); return; }
+    if (act === 'pay') { S.pay(); return; }
+    if (act === 'del' || el.classList.contains('log-del')) { S.del(); return; }
+    S.tick();
+  }, true);
+  document.addEventListener('change', function (ev) {
+    var el = ev.target;
+    if (el && (el.tagName === 'SELECT' || (el.type === 'checkbox'))) S.tick();
+  }, true);
+  document.addEventListener('keydown', function (ev) {
+    if (/^F([1-9]|1[0-2])$/.test(ev.key)) S.tick();
+  }, true);
+
+  /* ---------- task save / update feedback ---------- */
+  var btnSubmit = document.getElementById('btnSubmit');
+  if (btnSubmit) btnSubmit.addEventListener('click', function () {
+    setTimeout(function () {
+      if (typeof formOpen === 'function' && !formOpen()) {
+        var en = (typeof lang !== 'undefined' && lang === 'en');
+        toast('✓ ' + (en ? 'Task saved' : 'काम सेव्ह झाले'));
+        S.ok();
+      }
+    }, 0);
+  });
+
+  /* ---------- backup feedback ---------- */
+  var btnBackup = document.getElementById('btnBackup');
+  if (btnBackup) btnBackup.addEventListener('click', function () {
+    setTimeout(function () {
+      var en = (typeof lang !== 'undefined' && lang === 'en');
+      toast('⬇️ ' + (en ? 'Backup downloaded' : 'बॅकअप डाउनलोड झाले'));
+    }, 0);
+  });
+
+  /* ---------- sound toggle (🔊/🔇 in toolbar) ---------- */
+  var btnSound = document.getElementById('btnSound');
+  function paintSound() {
+    if (!btnSound) return;
+    btnSound.textContent = soundOn ? '🔊' : '🔇';
+    btnSound.title = soundOn ? 'आवाज चालू · Sound on' : 'आवाज बंद · Sound off';
+  }
+  if (btnSound) btnSound.addEventListener('click', function () {
+    soundOn = !soundOn;
+    try { localStorage.setItem('kamSound', soundOn ? '1' : '0'); } catch (e) {}
+    paintSound();
+    if (soundOn) S.ok();
+    var en = (typeof lang !== 'undefined' && lang === 'en');
+    toast(soundOn ? '🔊 ' + (en ? 'Sound on' : 'आवाज चालू') : '🔇 ' + (en ? 'Sound off' : 'आवाज बंद'));
+  });
+  paintSound();
+
+  /* ---------- PWA: register service worker when hosted (http/https) ---------- */
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+})();
+
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a35374f01e6c3f05',t:'MTc4ODQyNDkwMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
